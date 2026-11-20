@@ -27,3 +27,9 @@ export async function latestSnapshot(id:string):Promise<Snapshot|null>{
 }
 
 export async function readProgress(id:string){const {season}=config();return (await request('rpc/clan_progress',{method:'POST',body:JSON.stringify({p_clan_id:id,p_season:season})})).json()}
+
+async function rpc(name:string,body:object){return (await request('rpc/'+name,{method:'POST',body:JSON.stringify(body)})).json()}
+export async function beginSync(id:string,token:string):Promise<boolean>{return rpc('begin_clan_sync',{p_id:id,p_season:config().season,p_token:token})}
+export async function finishSync(id:string,token:string,ok:boolean):Promise<boolean>{return rpc('finish_clan_sync',{p_id:id,p_season:config().season,p_token:token,p_ok:ok})}
+export async function health(id:string){const q=new URLSearchParams({clan_id:'eq.'+id,season:'eq.'+config().season,select:'attempt_at,finished_at,status,last_success_at',limit:'1'});const rows=await (await request('sync_health?'+q)).json();return rows[0]??null}
+export async function pruneHistory(){return rpc('prune_clan_history',{})}
